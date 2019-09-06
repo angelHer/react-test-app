@@ -3,8 +3,12 @@ import GPT from "./GooglePublishTag";
 import FormatData from "./FormatData";
 import Ads from "./Ads";
 import AdsContainer from "./AdsContainer";
+import { stringToCamel } from './Utils';
 // import Prebid from "./prebid";
 import { ConfigAds } from "./ConfigAds";
+
+// Imports
+import * as R from 'ramda';
 
 class LogicAds {
     constructor(_configAds) {
@@ -20,8 +24,18 @@ class LogicAds {
         this._adUnit = this._ads.getAdUnit(uri, adUnitConfig);
         this._adsProps = _configAds;
 
+        this._container = new AdsContainer({
+            id: this._adsProps.configAds.adHeader.id,
+            activewl: this._adsProps.configAds.adHeader.activewl,
+        });
         this._googleTag = new GPT(this._adUnit);
-        // 2.- Inicializar la libreria ads y agregar script al dom
+
+        /**
+         * TODO cambiar propiedad por Utils.isMobile
+         */
+        // this.this._deviceType = Utils.isMobile;
+        this._deviceType = 'mobile';
+
         this.initializeAds()
     }
 
@@ -33,35 +47,33 @@ class LogicAds {
         return this._adsProps;
     }
 
+    get deviceType() {
+        return this._deviceType;
+    }
+
     initializeAds() {
-        // const {
-        //     desktopSize,
-        //     tabletSize,
-        //     mobileSize,
-        // } = this.adProps;
-
-        // Inicializar la libreria y scripts
-
-
-        // Crear contenedores
-        const CONTAINER = new AdsContainer({
-            id: this.adsProps.configAds.adHeader.id,
-            activewl: this.adsProps.configAds.adHeader.activewl,
-        });
+        let preparedSizes = this.adsProps.configAds.adHeader.sizes;
+        let tranformedSizes = R.map(size => stringToCamel(size), preparedSizes);
 
         const HEADER_CONTAINER = document.getElementById("adHeader");
-        HEADER_CONTAINER.innerHTML = CONTAINER.container;
+        HEADER_CONTAINER.innerHTML = this._container.container;
 
-        /**
-         * TODO mandarle los tamaños como propiedad
-         */
-        let desktopSize = this._ads.getBannerSize('superBanner');
-        console.log('size', desktopSize);
+        const bannerSize = this.getBannerSizeForDevice(tranformedSizes, this.deviceType);
+        this._googleTag.getBanner(bannerSize, this.adsProps.configAds.adHeader.id);
 
-        this._googleTag.getBanner(desktopSize, this.adsProps.configAds.adHeader.id);
-        // pedir banner e imprimirlos
-        // const SIZES = this.getAdForDevice();
-        // const BANNER_SIZE = Ads.getBannerTypes()[SIZES];
+        let desktopSize = this._ads.getBannerSize(tranformedSizes.desktopSize)
+        let tabletSize = this._ads.getBannerSize(tranformedSizes.tabletSize)
+        let mobileSize = this._ads.getBannerSize(tranformedSizes.mobileSize)
+
+        let sizeMapping = this._googleTag.createSizeMApping(
+            desktopSize,
+            tabletSize,
+            mobileSize
+        );
+        let algo = sizeMapping.then((res) => {
+            console.log('respuesrt', res)
+        });
+        console.log('algo', algo)
         // GOOGLE_TAG.getBanner(BANNER_SIZE, this.adsProps.configAds.adHeader.id);
 
         // const DESKTOP = Ads.getBannerTypes()[desktopSize];
@@ -78,20 +90,14 @@ class LogicAds {
         // }, 2000);
     }
 
-    getAdForDevice() {
-        const {
-            desktopSize,
-            tabletSize,
-            mobileSize,
-        } = this.adProps;
-        const IS_MOBILE = "desktop";
-        let device = "";
-        if (IS_MOBILE === "desktop") {
-            device = desktopSize;
-        } else if (IS_MOBILE === "tablet") {
-            device = tabletSize;
+    getBannerSizeForDevice(bannerSizes, deviceType) {
+        let device;
+        if (deviceType === "desktop") {
+            device = this._ads.getBannerSize(bannerSizes.desktopSize);;
+        } else if (deviceType === "tablet") {
+            device = this._ads.getBannerSize(bannerSizes.tabletSize);;
         } else {
-            device = mobileSize;
+            device = this._ads.getBannerSize(bannerSizes.mobileSize);
         }
         return device;
     }

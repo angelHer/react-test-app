@@ -1,0 +1,1 @@
+export const stringToCamel = str => str.replace(/\W+(.)/g, (match, chr) => chr.toUpperCase());

@@ -13,8 +13,6 @@ import { LogicAds } from "../helpers/Ads";
 
 class MainServer extends Component {
     componentDidMount() {
-        console.log('se monto el component');
-        console.log(Config);
         /**
          * Test new ads
          */
@@ -44,5 +42,5 @@ class MainServer extends Component {
         )
     }
 }
-//  module.exports = MainServer;
+
  export default MainServer;

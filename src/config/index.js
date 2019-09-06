@@ -17,12 +17,14 @@ export default {
     homePage: {
         adHeader: {
             id: "ad_page_header",
-            desktopSize: "superBanner",
-            tabletSize: "superBanner",
-            mobileSize: "mobileBanner",
             position: "atf",
             idContainer: "AdsHeader",
             activewl: false,
+            sizes: {
+                desktopSize: "super banner",
+                tabletSize: "super banner",
+                mobileSize: "mobile banner",
+            }
         },
     },
     mockup: {

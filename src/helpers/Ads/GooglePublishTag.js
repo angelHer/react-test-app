@@ -1,4 +1,5 @@
 import * as R from "ramda";
+import "idempotent-babel-polyfill";
 
 export default class GPT {
     constructor(adUnit) {
@@ -20,6 +21,7 @@ export default class GPT {
             const script = document.createElement("script");
 
             // Set the script element `src`
+            // script.async = true;
             script.src = src;
 
             // Inject the script into the DOM
@@ -35,6 +37,19 @@ export default class GPT {
             window.googletag.pubads().enableAsyncRendering();
             window.googletag.pubads().disableInitialLoad();
             window.googletag.pubads().enableSingleRequest();
+        })
+    }
+
+    createSizeMApping(desktop, tablet, mobile) {
+        return new Promise((resolve, reject) => {
+            window.googletag.cmd.push(() => {
+                let sizes = window.googletag.sizeMapping()
+                    .addSize([980, 140], desktop)
+                    .addSize([740, 140], tablet)
+                    .addSize([320, 140], mobile)
+                    .build();
+                resolve(sizes);
+            });
         });
     }
 

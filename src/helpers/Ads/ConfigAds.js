@@ -2,9 +2,9 @@ module.exports.ConfigAds = {
     homePage: {
         adHeader: {
             id: "ad_page_header",
-            desktopSize: "superBanner",
-            tabletSize: "superBanner",
-            mobileSize: "mobileBanner",
+            desktopSize: "super banner",
+            tabletSize: "super banner",
+            mobileSize: "mobile banner",
             position: "atf",
             idContainer: "AdsHeader",
             activewl: false,
