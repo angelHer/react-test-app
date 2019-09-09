@@ -96,6 +96,7 @@ class LogicAds {
         R.map(layer => {
             if(R.includes(this.contentType, layer.contentTypes)) {
                 this._container.insertLayerContainer(layer.id)
+                this._googleTag.getLayerBanner(this.adUnit, layer.id);
             }
         }, this.adLayer)
     }

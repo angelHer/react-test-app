@@ -1,7 +1,7 @@
 export default {
     // new config to Ads component
     adUnit: {
-        global: (process.env.CLUSTER_ENV && process.env.CLUSTER_ENV === "production") ? "/5644/es.televisa.lasestrellas" : "/5644/es.networks.bandamax",
+        global: (process.env.CLUSTER_ENV && process.env.CLUSTER_ENV === "production") ? "/5644/es.televisa.lasestrellas" : "/5644/televisacom.test",
         amp: (process.env.CLUSTER_ENV && process.env.CLUSTER_ENV === "production") ? "/5644/es.televisa.lasestrellas/ampproject" : "/5644/es.networks.test/ampproject",
         config: {
             include: [
@@ -34,7 +34,7 @@ export default {
             id: '1x1'
         },
         dosPorDos: {
-            contentTypes: [],
+            contentTypes: ['Page'],
             id: '2x2'
         },
     },

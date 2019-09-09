@@ -53,24 +53,19 @@ export default class GPT {
         });
     }
 
-    createContainer(adUnit, typeAdLayer = "2x2") {
+    /**
+     *
+     * @param {*} typeAdLayer must be 1x1 or 2x2
+     */
+    getLayerBanner(adUnit, typeAdLayer) {
         const AD = Number(typeAdLayer.substr(0, 1));
-        const AD_CONTAINER_ONE = document.createElement("div");
-        AD_CONTAINER_ONE.setAttribute("style", "margin:auto");
-        AD_CONTAINER_ONE.setAttribute("id", typeAdLayer);
-        const SLOT_NUMBER = (SLOT) => {
-            const RESULT = (SLOT === 2)
-                ? ""
-                : window.googletag.pubads().setTargeting("slot", `slot_${SLOT}`);
-            return RESULT;
-        };
-        document.body.insertBefore(AD_CONTAINER_ONE, document.body.firstChild);
         window.googletag.cmd.push(() => {
             const SLOT_LAYER = window.googletag.defineSlot(adUnit, [AD, AD], typeAdLayer)
                 .addService(window.googletag.pubads());
             window.googletag.pubads()
-                .setTargeting("skey", (window.location.search.match(/skey=(\w+)/) || ["", ""])[1]);
-            SLOT_NUMBER(AD);
+                .setTargeting("skey", (window.location.search.match(/skey=(\w+)/) || ["", ""])[1])
+                .setTargeting("slot", `slot_${AD}`);
+
             window.googletag.enableServices();
             window.googletag.display(typeAdLayer);
             window.googletag.pubads().refresh([SLOT_LAYER]);
