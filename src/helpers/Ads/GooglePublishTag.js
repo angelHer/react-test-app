@@ -53,14 +53,69 @@ export default class GPT {
         });
     }
 
-    getDisplayBanner(type, id, sizeMapping) {
-        console.log('size mapping', sizeMapping)
+    createContainer(adUnit, typeAdLayer = "2x2") {
+        const AD = Number(typeAdLayer.substr(0, 1));
+        const AD_CONTAINER_ONE = document.createElement("div");
+        AD_CONTAINER_ONE.setAttribute("style", "margin:auto");
+        AD_CONTAINER_ONE.setAttribute("id", typeAdLayer);
+        const SLOT_NUMBER = (SLOT) => {
+            const RESULT = (SLOT === 2)
+                ? ""
+                : window.googletag.pubads().setTargeting("slot", `slot_${SLOT}`);
+            return RESULT;
+        };
+        document.body.insertBefore(AD_CONTAINER_ONE, document.body.firstChild);
         window.googletag.cmd.push(() => {
-            const SLOT_LAYER = window.googletag.defineSlot(this.adUnit, type, id)
-                .defineSizeMapping(sizeMapping)
+            const SLOT_LAYER = window.googletag.defineSlot(adUnit, [AD, AD], typeAdLayer)
                 .addService(window.googletag.pubads());
             window.googletag.pubads()
                 .setTargeting("skey", (window.location.search.match(/skey=(\w+)/) || ["", ""])[1]);
+            SLOT_NUMBER(AD);
+            window.googletag.enableServices();
+            window.googletag.display(typeAdLayer);
+            window.googletag.pubads().refresh([SLOT_LAYER]);
+        });
+    }
+
+    pushNativeAd(containerId, native, incrementSlot) {
+        try {
+            const SLOT_TELEVISA_FLUID = window.googletag.defineSlot(this.adUnit, ["fluid"], containerId)
+                .addService(window.googletag.pubads());
+            window.googletag.pubads().enableSingleRequest();
+            window.googletag.pubads().setTargeting("slot", `slot_${incrementSlot}`);
+            window.googletag.pubads().enableLazyLoad({
+                fetchMarginPercent: 200,
+                renderMarginPercent: 400,
+                mobileScaling: 2.0,
+            });
+            window.googletag.enableServices();
+            if (native && native !== "fluid") {
+                window.googletag.pubads()
+                    .setTargeting("native", native)
+                    .setTargeting("skey", (window.location.search.match(/skey=(\w+)/) || ["", ""])[1]);
+            }
+            window.googletag.display(containerId);
+            window.googletag.pubads().refresh([SLOT_TELEVISA_FLUID]);
+            return SLOT_TELEVISA_FLUID;
+        } catch (err) {
+            return null;
+        }
+    }
+
+    getDisplayBanner(type, id, mapping, position, incrementSlot) {
+        window.googletag.cmd.push(() => {
+            const SLOT_LAYER = window.googletag.defineSlot(this.adUnit, type, id)
+                .addService(window.googletag.pubads())
+                .defineSizeMapping(mapping);
+            window.googletag.pubads()
+                .setTargeting("position", position)
+                .setTargeting("slot", `slot_${incrementSlot}`)
+                .setTargeting("skey", (window.location.search.match(/skey=(\w+)/) || ["", ""])[1])
+                .enableLazyLoad({
+                    fetchMarginPercent: 200,
+                    renderMarginPercent: 400,
+                    mobileScaling: 2.0,
+                });
             window.googletag.enableServices();
             window.googletag.display(id);
 
