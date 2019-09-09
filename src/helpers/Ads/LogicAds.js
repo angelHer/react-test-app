@@ -18,11 +18,11 @@ class LogicAds {
             adUnitConfig
         } = _configAds;
 
-
         // 1.- instanciar ads y obtenet adUnit
         this._ads = new Ads();
         this._adUnit = this._ads.getAdUnit(uri, adUnitConfig);
         this._adsProps = _configAds;
+        this._getIncrement = Number(localStorage.getItem("increment"));
 
         this._container = new AdsContainer({
             id: this._adsProps.configAds.adHeader.id,
@@ -51,13 +51,22 @@ class LogicAds {
         return this._deviceType;
     }
 
+    get slotIncrement() {
+        return this._getIncrement;
+    }
+
+    set slotIncrement(value) {
+        localStorage.setItem("increment", value);
+        this._getIncrement = value;
+    }
+
     async initializeAds() {
         const DATA_AD_HEADER = this.adsProps.configAds.adHeader;
         let PREPARED_SIZES = DATA_AD_HEADER.sizes;
         const POSITION = DATA_AD_HEADER.position;
         const ID = DATA_AD_HEADER.id;
         let tranformedSizes = R.map(size => stringToCamel(size), PREPARED_SIZES);
-
+        this.slotIncrement += 1;
         const HEADER_CONTAINER = document.getElementById("adHeader");
         HEADER_CONTAINER.innerHTML = this._container.container;
 
@@ -72,7 +81,7 @@ class LogicAds {
         );
 
         const bannerSize = this.getBannerSizeForDevice(tranformedSizes, this.deviceType);
-        this._googleTag.getDisplayBanner(bannerSize, ID, sizeMapping, POSITION);
+        this._googleTag.getDisplayBanner(bannerSize, ID, sizeMapping, POSITION, this.slotIncrement);
     }
 
     getBannerSizeForDevice(bannerSizes, deviceType) {
@@ -88,4 +97,9 @@ class LogicAds {
     }
 }
 
+/*
+let getIncrement = Number(localStorage.getItem("increment"));
+getIncrement += 1;
+localStorage.setItem("increment", getIncrement);
+*/
 export default LogicAds;

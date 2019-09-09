@@ -31,6 +31,7 @@ class MainServer extends Component {
             configAds: Config.homePage
         }
         let logicAds = new LogicAds(adsConfig);
+        localStorage.setItem("increment", "1");
     }
 
     render() {
