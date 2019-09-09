@@ -28,7 +28,8 @@ class MainServer extends Component {
             uri,
             contentType: _type,
             adUnitConfig: Config.adUnit,
-            configAds: Config.homePage
+            configAds: Config.homePage,
+            adLayer: Config.adLayer
         }
         let logicAds = new LogicAds(adsConfig);
         localStorage.setItem("increment", "1");

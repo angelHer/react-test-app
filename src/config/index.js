@@ -27,6 +27,18 @@ export default {
             }
         },
     },
+
+    adLayer: {
+        unoPorUno: {
+            contentTypes: ['Page'],
+            id: '1x1'
+        },
+        dosPorDos: {
+            contentTypes: [],
+            id: '2x2'
+        },
+    },
+
     mockup: {
         uri: '/',
         _type: 'Page'

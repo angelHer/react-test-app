@@ -15,10 +15,14 @@ class LogicAds {
         let {
             uri,
             contentType,
-            adUnitConfig
+            adUnitConfig,
+            adLayer
         } = _configAds;
 
         // 1.- instanciar ads y obtenet adUnit
+        this.adLayer = adLayer;
+        this.contentType = contentType
+
         this._ads = new Ads();
         this._adUnit = this._ads.getAdUnit(uri, adUnitConfig);
         this._adsProps = _configAds;
@@ -68,7 +72,7 @@ class LogicAds {
         let tranformedSizes = R.map(size => stringToCamel(size), PREPARED_SIZES);
         this.slotIncrement += 1;
         const HEADER_CONTAINER = document.getElementById("adHeader");
-        HEADER_CONTAINER.innerHTML = this._container.container;
+        HEADER_CONTAINER.innerHTML = this._container.displayContainer;
 
         const bannerSize = this.getBannerSizeForDevice(tranformedSizes, this.deviceType);
 
@@ -83,6 +87,17 @@ class LogicAds {
         );
 
         this._googleTag.getDisplayBanner(bannerSize, ID, sizeMapping, POSITION, this.slotIncrement);
+
+
+        /**
+         * Insert Ads de tipo Layer
+         * 1x1 y 2x2
+         */
+        R.map(layer => {
+            if(R.includes(this.contentType, layer.contentTypes)) {
+                this._container.insertLayerContainer(layer.id)
+            }
+        }, this.adLayer)
     }
 
     getBannerSizeForDevice(bannerSizes, deviceType) {

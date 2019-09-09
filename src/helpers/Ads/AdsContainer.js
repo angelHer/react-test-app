@@ -98,7 +98,7 @@ export default class AdsContainer {
      * Funciones de la clase AdsContainer
      */
 
-    get container() {
+    get displayContainer() {
         return (this.activewl)
             ? this.getWhiteLabelContainer()
             : this.getDefaultContainer();
@@ -144,5 +144,12 @@ export default class AdsContainer {
         `;
 
         return HTML;
+    }
+
+    insertLayerContainer(typeAdLayer) {
+        const layerContainer = document.createElement("div");
+        layerContainer.setAttribute("style", "margin:auto");
+        layerContainer.setAttribute("id", typeAdLayer);
+        document.body.insertBefore(layerContainer, document.body.firstChild);
     }
 }
