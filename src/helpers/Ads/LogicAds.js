@@ -52,14 +52,14 @@ class LogicAds {
     }
 
     async initializeAds() {
-        let preparedSizes = this.adsProps.configAds.adHeader.sizes;
-        let tranformedSizes = R.map(size => stringToCamel(size), preparedSizes);
+        const DATA_AD_HEADER = this.adsProps.configAds.adHeader;
+        let PREPARED_SIZES = DATA_AD_HEADER.sizes;
+        const POSITION = DATA_AD_HEADER.position;
+        const ID = DATA_AD_HEADER.id;
+        let tranformedSizes = R.map(size => stringToCamel(size), PREPARED_SIZES);
 
         const HEADER_CONTAINER = document.getElementById("adHeader");
         HEADER_CONTAINER.innerHTML = this._container.container;
-
-        const bannerSize = this.getBannerSizeForDevice(tranformedSizes, this.deviceType);
-        this._googleTag.getDisplayBanner(bannerSize, this.adsProps.configAds.adHeader.id);
 
         let desktopSize = this._ads.getBannerSize(tranformedSizes.desktopSize)
         let tabletSize = this._ads.getBannerSize(tranformedSizes.tabletSize)
@@ -70,6 +70,9 @@ class LogicAds {
             tabletSize,
             mobileSize
         );
+
+        const bannerSize = this.getBannerSizeForDevice(tranformedSizes, this.deviceType);
+        this._googleTag.getDisplayBanner(bannerSize, ID, sizeMapping, POSITION);
     }
 
     getBannerSizeForDevice(bannerSizes, deviceType) {

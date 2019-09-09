@@ -53,12 +53,22 @@ export default class GPT {
         });
     }
 
-    getDisplayBanner(type, id) {
+    getDisplayBanner(type, id, mapping, position) {
+        let getIncrement = Number(localStorage.getItem("increment"));
+        getIncrement += 1;
         window.googletag.cmd.push(() => {
             const SLOT_LAYER = window.googletag.defineSlot(this.adUnit, type, id)
-                .addService(window.googletag.pubads());
+                .addService(window.googletag.pubads())
+                // .defineSizeMapping(mapping);
             window.googletag.pubads()
-                .setTargeting("skey", (window.location.search.match(/skey=(\w+)/) || ["", ""])[1]);
+                .setTargeting("position", position)
+                .setTargeting("slot", `slot_${getIncrement}`)
+                .setTargeting("skey", (window.location.search.match(/skey=(\w+)/) || ["", ""])[1])
+                .enableLazyLoad({
+                    fetchMarginPercent: 200,
+                    renderMarginPercent: 400,
+                    mobileScaling: 2.0,
+                });
             window.googletag.enableServices();
             window.googletag.display(id);
 
