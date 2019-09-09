@@ -53,7 +53,7 @@ export default class GPT {
         });
     }
 
-    getBanner(type, id) {
+    getDisplayBanner(type, id) {
         window.googletag.cmd.push(() => {
             const SLOT_LAYER = window.googletag.defineSlot(this.adUnit, type, id)
                 .addService(window.googletag.pubads());

@@ -51,7 +51,7 @@ class LogicAds {
         return this._deviceType;
     }
 
-    initializeAds() {
+    async initializeAds() {
         let preparedSizes = this.adsProps.configAds.adHeader.sizes;
         let tranformedSizes = R.map(size => stringToCamel(size), preparedSizes);
 
@@ -59,35 +59,17 @@ class LogicAds {
         HEADER_CONTAINER.innerHTML = this._container.container;
 
         const bannerSize = this.getBannerSizeForDevice(tranformedSizes, this.deviceType);
-        this._googleTag.getBanner(bannerSize, this.adsProps.configAds.adHeader.id);
+        this._googleTag.getDisplayBanner(bannerSize, this.adsProps.configAds.adHeader.id);
 
         let desktopSize = this._ads.getBannerSize(tranformedSizes.desktopSize)
         let tabletSize = this._ads.getBannerSize(tranformedSizes.tabletSize)
         let mobileSize = this._ads.getBannerSize(tranformedSizes.mobileSize)
 
-        let sizeMapping = this._googleTag.createSizeMApping(
+        let sizeMapping = await this._googleTag.createSizeMApping(
             desktopSize,
             tabletSize,
             mobileSize
         );
-        let algo = sizeMapping.then((res) => {
-            console.log('respuesrt', res)
-        });
-        console.log('algo', algo)
-        // GOOGLE_TAG.getBanner(BANNER_SIZE, this.adsProps.configAds.adHeader.id);
-
-        // const DESKTOP = Ads.getBannerTypes()[desktopSize];
-        // const TABLET = Ads.getBannerTypes()[tabletSize];
-        // const MOBILE = Ads.getBannerTypes()[mobileSize];
-        // setTimeout(() => {
-        //     Prebid.loadPrebid({
-        //         id: "ad_page_header",
-        //         adUnit: this.adUnit,
-        //         DESKTOP,
-        //         TABLET,
-        //         MOBILE,
-        //     });
-        // }, 2000);
     }
 
     getBannerSizeForDevice(bannerSizes, deviceType) {
