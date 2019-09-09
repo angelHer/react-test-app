@@ -1,5 +1,4 @@
 import * as R from "ramda";
-import "idempotent-babel-polyfill";
 
 export default class GPT {
     constructor(adUnit) {
