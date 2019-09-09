@@ -1,11 +1,9 @@
 // import Utils from "@televisadigital/utilities";
 import GPT from "./GooglePublishTag";
-import FormatData from "./FormatData";
 import Ads from "./Ads";
+import SlotNumbers from './SlotNumbers';
 import AdsContainer from "./AdsContainer";
 import { stringToCamel } from './Utils';
-// import Prebid from "./prebid";
-import { ConfigAds } from "./ConfigAds";
 
 // Imports
 import * as R from 'ramda';
@@ -23,10 +21,11 @@ class LogicAds {
         this.adLayer = adLayer;
         this.contentType = contentType
 
+        this._slotNumbers = new SlotNumbers();
+
         this._ads = new Ads();
         this._adUnit = this._ads.getAdUnit(uri, adUnitConfig);
         this._adsProps = _configAds;
-        this._getIncrement = Number(localStorage.getItem("increment"));
 
         this._container = new AdsContainer({
             id: this._adsProps.configAds.adHeader.id,
@@ -55,22 +54,13 @@ class LogicAds {
         return this._deviceType;
     }
 
-    get slotIncrement() {
-        return this._getIncrement;
-    }
-
-    set slotIncrement(value) {
-        localStorage.setItem("increment", value);
-        this._getIncrement = value;
-    }
-
     async initializeAds() {
         const DATA_AD_HEADER = this.adsProps.configAds.adHeader;
         let PREPARED_SIZES = DATA_AD_HEADER.sizes;
         const POSITION = DATA_AD_HEADER.position;
         const ID = DATA_AD_HEADER.id;
         let tranformedSizes = R.map(size => stringToCamel(size), PREPARED_SIZES);
-        this.slotIncrement += 1;
+
         const HEADER_CONTAINER = document.getElementById("adHeader");
         HEADER_CONTAINER.innerHTML = this._container.displayContainer;
 
@@ -86,19 +76,31 @@ class LogicAds {
             mobileSize
         );
 
-        this._googleTag.getDisplayBanner(bannerSize, ID, sizeMapping, POSITION, this.slotIncrement);
-
-
         /**
          * Insert Ads de tipo Layer
          * 1x1 y 2x2
          */
         R.map(layer => {
             if(R.includes(this.contentType, layer.contentTypes)) {
+                this._slotNumbers.counter++;
                 this._container.insertLayerContainer(layer.id)
                 this._googleTag.getLayerBanner(this.adUnit, layer.id);
             }
         }, this.adLayer)
+
+        /**
+         * TODO al dicidir la funcion revisar esta logica
+         */
+        this._slotNumbers.counter++;
+
+        // Banners de tipo display
+        this._googleTag.getDisplayBanner(
+            bannerSize,
+            ID,
+            sizeMapping,
+            POSITION,
+            this._slotNumbers.counter
+        );
     }
 
     getBannerSizeForDevice(bannerSizes, deviceType) {

@@ -34,7 +34,7 @@ export default {
             id: '1x1'
         },
         dosPorDos: {
-            contentTypes: ['Page'],
+            contentTypes: [],
             id: '2x2'
         },
     },
