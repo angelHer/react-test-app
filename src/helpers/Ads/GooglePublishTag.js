@@ -53,19 +53,17 @@ export default class GPT {
         });
     }
 
-    getDisplayBanner(type, id) {
+    getDisplayBanner(type, id, sizeMapping) {
+        console.log('size mapping', sizeMapping)
         window.googletag.cmd.push(() => {
             const SLOT_LAYER = window.googletag.defineSlot(this.adUnit, type, id)
+                .defineSizeMapping(sizeMapping)
                 .addService(window.googletag.pubads());
             window.googletag.pubads()
                 .setTargeting("skey", (window.location.search.match(/skey=(\w+)/) || ["", ""])[1]);
             window.googletag.enableServices();
             window.googletag.display(id);
 
-            /*
-              TODO Agregar un mejor control como un async y await
-            * Aqui tenia un setTimeOut para esperar respuesta y despues renderizar
-            */
             window.googletag.pubads().refresh([SLOT_LAYER]);
         });
     }

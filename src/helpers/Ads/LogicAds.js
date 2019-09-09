@@ -59,7 +59,6 @@ class LogicAds {
         HEADER_CONTAINER.innerHTML = this._container.container;
 
         const bannerSize = this.getBannerSizeForDevice(tranformedSizes, this.deviceType);
-        this._googleTag.getDisplayBanner(bannerSize, this.adsProps.configAds.adHeader.id);
 
         let desktopSize = this._ads.getBannerSize(tranformedSizes.desktopSize)
         let tabletSize = this._ads.getBannerSize(tranformedSizes.tabletSize)
@@ -69,6 +68,12 @@ class LogicAds {
             desktopSize,
             tabletSize,
             mobileSize
+        );
+
+        this._googleTag.getDisplayBanner(
+            bannerSize,
+            this.adsProps.configAds.adHeader.id,
+            sizeMapping
         );
     }
 
