@@ -12,19 +12,13 @@ export default class GPT {
     }
 
     loadScript(urlSources) {
-        R.map( (src) => {
-            // Get the first script element on the page
+        R.map(src => {
             const ref = document.getElementsByTagName("script")[0];
-
-            // Create a new script element
             const script = document.createElement("script");
-
-            // Set the script element `src`
-            // script.async = true;
             script.src = src;
-
-            // Inject the script into the DOM
             ref.parentNode.insertBefore( script, ref );
+
+            return src;
         }, urlSources);
     }
 

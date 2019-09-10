@@ -119,6 +119,7 @@ class LogicAds {
                 this._container.insertLayerContainer(layer.id)
                 this._googleTag.getLayerBanner(this.adUnit, layer.id);
             }
+            return layer;
         }, this.adLayer)
     }
 
