@@ -37,8 +37,11 @@ class MainServer extends Component {
     render() {
         return (
             <div>
-                <div>Componente del main</div>
+                <div>Ads tipo display</div>
                 <div id="adHeader"></div>
+
+                <div>Ads tipo native</div>
+                <div id="fiveitems_native"></div>
             </div>
         )
     }

@@ -84,6 +84,16 @@ class LogicAds {
             sizeMapping,
             POSITION
         );
+
+        this.initializeNativeAds();
+    }
+
+    initializeNativeAds() {
+        this._slotNumbers.counter++;
+        /**
+         * TODO cambiar los parametros, se recibiran desde el constructor
+         */
+        this._googleTag.getNativeBanner('fiveitems_native', 'FiveItem', this._slotNumbers.counter)
     }
 
     initializeDisplayAds(bannerSize, id, sizeMapping, position) {

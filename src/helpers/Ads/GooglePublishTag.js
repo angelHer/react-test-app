@@ -71,29 +71,25 @@ export default class GPT {
         });
     }
 
-    pushNativeAd(containerId, native, incrementSlot) {
-        try {
-            const SLOT_TELEVISA_FLUID = window.googletag.defineSlot(this.adUnit, ["fluid"], containerId)
-                .addService(window.googletag.pubads());
-            window.googletag.pubads().enableSingleRequest();
-            window.googletag.pubads().setTargeting("slot", `slot_${incrementSlot}`);
-            window.googletag.pubads().enableLazyLoad({
-                fetchMarginPercent: 200,
-                renderMarginPercent: 400,
-                mobileScaling: 2.0,
-            });
-            window.googletag.enableServices();
-            if (native && native !== "fluid") {
-                window.googletag.pubads()
-                    .setTargeting("native", native)
-                    .setTargeting("skey", (window.location.search.match(/skey=(\w+)/) || ["", ""])[1]);
-            }
-            window.googletag.display(containerId);
-            window.googletag.pubads().refresh([SLOT_TELEVISA_FLUID]);
-            return SLOT_TELEVISA_FLUID;
-        } catch (err) {
-            return null;
+    getNativeBanner(containerId, native, incrementSlot) {
+        const SLOT_TELEVISA_FLUID = window.googletag.defineSlot(this.adUnit, ["fluid"], containerId)
+            .addService(window.googletag.pubads());
+        window.googletag.pubads().enableSingleRequest();
+        window.googletag.pubads().setTargeting("slot", `slot_${incrementSlot}`);
+        window.googletag.pubads().enableLazyLoad({
+            fetchMarginPercent: 200,
+            renderMarginPercent: 400,
+            mobileScaling: 2.0,
+        });
+        window.googletag.enableServices();
+        if (native && native !== "fluid") {
+            window.googletag.pubads()
+                .setTargeting("native", native)
+                .setTargeting("skey", (window.location.search.match(/skey=(\w+)/) || ["", ""])[1]);
         }
+        window.googletag.display(containerId);
+        window.googletag.pubads().refresh([SLOT_TELEVISA_FLUID]);
+        return SLOT_TELEVISA_FLUID;
     }
 
     getDisplayBanner(type, id, mapping, position, incrementSlot) {
