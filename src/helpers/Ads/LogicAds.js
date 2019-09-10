@@ -76,6 +76,29 @@ class LogicAds {
             mobileSize
         );
 
+        this.initializeLayerAds();
+
+        this.initializeDisplayAds(
+            bannerSize,
+            ID,
+            sizeMapping,
+            POSITION
+        );
+    }
+
+    initializeDisplayAds(bannerSize, id, sizeMapping, position) {
+        this._slotNumbers.counter++;
+
+        this._googleTag.getDisplayBanner(
+            bannerSize,
+            id,
+            sizeMapping,
+            position,
+            this._slotNumbers.counter
+        );
+    }
+
+    initializeLayerAds() {
         /**
          * Insert Ads de tipo Layer
          * 1x1 y 2x2
@@ -87,20 +110,6 @@ class LogicAds {
                 this._googleTag.getLayerBanner(this.adUnit, layer.id);
             }
         }, this.adLayer)
-
-        /**
-         * TODO al dicidir la funcion revisar esta logica
-         */
-        this._slotNumbers.counter++;
-
-        // Banners de tipo display
-        this._googleTag.getDisplayBanner(
-            bannerSize,
-            ID,
-            sizeMapping,
-            POSITION,
-            this._slotNumbers.counter
-        );
     }
 
     getBannerSizeForDevice(bannerSizes, deviceType) {
@@ -116,9 +125,4 @@ class LogicAds {
     }
 }
 
-/*
-let getIncrement = Number(localStorage.getItem("increment"));
-getIncrement += 1;
-localStorage.setItem("increment", getIncrement);
-*/
 export default LogicAds;
