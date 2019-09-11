@@ -1,73 +1,40 @@
 class Prebid {
-    constructor(adUnit) {
+    constructor() {
         this.PREBID_TIMEOUT = 1000;
         this.FAILSAFE_TIMEOUT = 3000;
 
-        this.adUnit = adUnit;
+        this._sizes = '';
+    }
+
+    get sizes() {
+        return this._sizes;
+    }
+
+    set sizes(val) {
+        this._sizes = val;
     }
 
     initializePrebid(idGranularidad, sizes) {
-        var adUnits = [
-            {
-                code: 'ad_page_header',
-                mediaTypes: {
-                    banner: {
-                        sizes: sizes
-                    }
-                },
-                bids: [{
-                    bidder: 'appnexus',
-                    params: {
-                        placementId: idGranularidad
-                    }
-                }]
-            }
-        ];
+        this.sizes = sizes;
+        let adUnits = this.prepareBidders(idGranularidad)
 
-        var pbjs = window.pbjs || {};
+        let pbjs = window.pbjs || {};
         pbjs.que = pbjs.que || [];
 
         pbjs.que.push(() => {
-            console.log('aqui', adUnits)
             pbjs.addAdUnits(adUnits);
-            try{
-                pbjs.requestBids({
-                    adUnits: [adUnits],
-                    timeout: this.PREBID_TIMEOUT,
-                    bidsBackHandler: () => {
-                        console.log('dentro')
-                        this.initAdserver(sizes)
-                    },
-                });
-            } catch (e) {
-                console.log('eeeeee', e)
-            }
+            pbjs.requestBids({
+                adUnits: [adUnits],
+                timeout: this.PREBID_TIMEOUT,
+                bidsBackHandler: () => {
+                    this.initAdserver([728, 90])
+                },
+            });
         });
-
-        // static sendDataPrebid(id, sizes, prebid) {
-        //     console.log('sendDataPrebid', id, sizes, prebid)
-        //     const PB_JS = window.pbjs || {};
-        //     PB_JS.que = PB_JS.que || [];
-
-        //     PB_JS.que.push(() => {
-        //         PB_JS.addAdUnits(prebid);
-        //         PB_JS.requestBids({
-        //             adUnits: [prebid],
-        //             timeout: PREBID_TIMEOUT,
-        //             bidsBackHandler: () => {
-        //                 this.sendAdserverRequest(id, sizes);
-        //             },
-        //         });
-        //     });
-        //     setTimeout(() => {
-        //         this.sendAdserverRequest(id, sizes);
-        //     }, FAILSAFE_TIMEOUT);
-        // }
-
 
         // in case PBJS doesn't load
         setTimeout(() => {
-           // this.initAdserver(sizes);
+        //    this.initAdserver(sizes);
         }, this.FAILSAFE_TIMEOUT);
     }
 
@@ -89,24 +56,58 @@ class Prebid {
         });
     }
 
-    // static sendAdserverRequest(slotId, sizes) {
-    //     console.log('sendAdserverRequest', slotId, sizes)
-    //     if (BID_REQUESTS.find(id => id === slotId)) return;
-    //     const SLOTS = window.googletag.pubads().getSlots();
-    //     const DISPLAY_AD_SLOT = SLOTS.find(slot => slot.getSlotElementId() === slotId);
-    //     BID_REQUESTS.push(slotId);
-    //     window.googletag.cmd.push(() => {
-    //         window.pbjs.que.push(() => {
-    //             window.pbjs.setConfig({
-    //                 priceGranularity: "dense",
-    //                 enableSendAllBids: true,
-    //                 sizeConfig: this.sizesConfig(sizes),
-    //             });
-    //             window.pbjs.setTargetingForGPTAsync();
-    //             window.googletag.pubads().refresh([DISPLAY_AD_SLOT]);
-    //         });
-    //     });
-    // }
+    prepareBidders(idGranularidad) {
+        return {
+            code: 'ad_page_header',
+            mediaTypes: {
+                banner: {
+                    sizes: [728, 90]
+                }
+            },
+            bids: [
+                {
+                    bidder: 'appnexus',
+                    params: {
+                        placementId: idGranularidad
+                    }
+                },
+                {
+                    bidder: 'rubicon',
+                    params: {
+                        accountId: "16302",
+                        inventory: {
+                            position: "atf"
+                        },
+                        siteId: "119754",
+                        zoneId: "566568"
+                    }
+                }
+            ]
+        };
+    }
+
+    sizesConfig(sizes) {
+        const DESKTOP = (Array.isArray(sizes.desktopSize[0])) ? sizes.desktopSize : [sizes.desktopSize];
+        const TABLET = (Array.isArray(sizes.tabletSize[0])) ? sizes.tabletSize : [sizes.tabletSize];
+        const MOBILE = (Array.isArray(sizes.mobileSize[0])) ? sizes.mobileSize : [sizes.mobileSize];
+
+        const SIZE_CONFIG = [{
+            mediaQuery: "(min-width: 1024px)",
+            sizesSupported: DESKTOP,
+            labels: ["desktop"],
+        }, {
+            mediaQuery: "(min-width: 768px) and (max-width: 1023px)",
+            sizesSupported: TABLET,
+            labels: ["tablet"],
+        }, {
+            mediaQuery: "(min-width: 0px)",
+            sizesSupported: MOBILE,
+            labels: ["phone"],
+        }];
+
+        console.log('return sizesConfig', SIZE_CONFIG);
+        return SIZE_CONFIG;
+    }
 }
 
 export default Prebid;

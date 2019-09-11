@@ -38,10 +38,7 @@ class LogicAds {
         this._googleTag = new GPT(this._adUnit);
 
         // prebid
-        console.log('adunit', this.adUnit)
-        this._prebid = new Prebid(
-            this.adUnit
-        );
+        this._prebid = new Prebid();
 
         /**
          * TODO cambiar propiedad por Utils.isMobile
@@ -91,24 +88,25 @@ class LogicAds {
             mobileSize
         );
 
+        console.log('before', desktopSize)
+
         let sizesPrebid = {
             desktopSize,
             tabletSize,
             mobileSize
         }
 
-        console.log('desktop', sizeMapping, sizesPrebid)
-
-         // Prebid
-         console.log(desktopSize,
-            tabletSize,
-            mobileSize)
-        // buscar el id dependiendo del tamaño del banner
+        /**
+         * Se inicializan los servicios de prebid
+         */
         let idGranularidad = R.prop(
             R.prop(this.deviceType, tranformedSizes),
             this.bidders.appNexus
         );
         this._prebid.initializePrebid(idGranularidad, sizesPrebid);
+        /**
+         * Termina configuracion de prebid
+         */
 
         this.initializeLayerAds();
 
@@ -118,7 +116,6 @@ class LogicAds {
             sizeMapping,
             POSITION
         );
-
         // this.initializeNativeAds();
     }
 

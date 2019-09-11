@@ -4,7 +4,7 @@ export default class GPT {
     constructor(adUnit) {
         this.adsSources = [
             "https://securepubads.g.doubleclick.net/tag/js/gpt.js",
-            "https://i2.esmas.com/las-estrellas/assets/webapp/js/prebid2.0.0.js",
+            "https://i2.esmas.com/las-estrellas/assets/webapp/js/prebid2.8.0.js",
         ];
         this.loadScript(this.adsSources);
         this.adUnit = adUnit;
