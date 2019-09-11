@@ -3,6 +3,7 @@ export default {
     adUnit: {
         global: (process.env.CLUSTER_ENV && process.env.CLUSTER_ENV === "production") ? "/5644/es.televisa.lasestrellas" : "/5644/televisacom.test",
         amp: (process.env.CLUSTER_ENV && process.env.CLUSTER_ENV === "production") ? "/5644/es.televisa.lasestrellas/ampproject" : "/5644/es.networks.test/ampproject",
+        canal: (process.env.CLUSTER_ENV && process.env.CLUSTER_ENV === "production") ? "es.televisa.lasestrellas.video" : "televisacom.test",
         config: {
             include: [
                 "ArticlePage",
@@ -21,9 +22,9 @@ export default {
             idContainer: "AdsHeader",
             activewl: false,
             sizes: {
-                desktopSize: "super banner",
-                tabletSize: "super banner",
-                mobileSize: "mobile banner",
+                desktop: "super banner",
+                tablet: "super banner",
+                mobile: "mobile banner",
             }
         },
     },
@@ -37,6 +38,21 @@ export default {
             contentTypes: [],
             id: '2x2'
         },
+    },
+
+    bidders: {
+        appNexus: {
+            visible: true,
+            superBanner: "14862539",
+            boxBanner: "14862542",
+            largeBanner: "14862559",
+            skyscrapper: "15408493",
+            mobileBanner: "14862539",
+            comboBox: "15408508",
+            comboPortrait: "15408564",
+            comboMaster: "14862543",
+            boton: "15408567",
+        }
     },
 
     mockup: {

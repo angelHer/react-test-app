@@ -5,6 +5,8 @@ import SlotNumbers from './SlotNumbers';
 import AdsContainer from "./AdsContainer";
 import { stringToCamel } from './Utils';
 
+import Prebid from './prebid/Prebid';
+
 // Imports
 import * as R from 'ramda';
 
@@ -14,10 +16,12 @@ class LogicAds {
             uri,
             contentType,
             adUnitConfig,
-            adLayer
+            adLayer,
+            bidders
         } = _configAds;
 
         // 1.- instanciar ads y obtenet adUnit
+        this._bidders = bidders;
         this.adLayer = adLayer;
         this.contentType = contentType
 
@@ -33,11 +37,17 @@ class LogicAds {
         });
         this._googleTag = new GPT(this._adUnit);
 
+        // prebid
+        console.log('adunit', this.adUnit)
+        this._prebid = new Prebid(
+            this.adUnit
+        );
+
         /**
          * TODO cambiar propiedad por Utils.isMobile
          */
         // this.this._deviceType = Utils.isMobile;
-        this._deviceType = 'mobile';
+        this._deviceType = 'desktop';
 
         this.initializeAds()
     }
@@ -54,6 +64,10 @@ class LogicAds {
         return this._deviceType;
     }
 
+    get bidders() {
+        return this._bidders;
+    }
+
     async initializeAds() {
         const DATA_AD_HEADER = this.adsProps.configAds.adHeader;
         let PREPARED_SIZES = DATA_AD_HEADER.sizes;
@@ -65,16 +79,36 @@ class LogicAds {
         HEADER_CONTAINER.innerHTML = this._container.displayContainer;
 
         const bannerSize = this.getBannerSizeForDevice(tranformedSizes, this.deviceType);
+        console.log(this.deviceType, tranformedSizes)
 
-        let desktopSize = this._ads.getBannerSize(tranformedSizes.desktopSize)
-        let tabletSize = this._ads.getBannerSize(tranformedSizes.tabletSize)
-        let mobileSize = this._ads.getBannerSize(tranformedSizes.mobileSize)
+        let desktopSize = this._ads.getBannerSize(tranformedSizes.desktop)
+        let tabletSize = this._ads.getBannerSize(tranformedSizes.tablet)
+        let mobileSize = this._ads.getBannerSize(tranformedSizes.mobile)
 
         let sizeMapping = await this._googleTag.createSizeMApping(
             desktopSize,
             tabletSize,
             mobileSize
         );
+
+        let sizesPrebid = {
+            desktopSize,
+            tabletSize,
+            mobileSize
+        }
+
+        console.log('desktop', sizeMapping, sizesPrebid)
+
+         // Prebid
+         console.log(desktopSize,
+            tabletSize,
+            mobileSize)
+        // buscar el id dependiendo del tamaño del banner
+        let idGranularidad = R.prop(
+            R.prop(this.deviceType, tranformedSizes),
+            this.bidders.appNexus
+        );
+        this._prebid.initializePrebid(idGranularidad, sizesPrebid);
 
         this.initializeLayerAds();
 
@@ -85,7 +119,7 @@ class LogicAds {
             POSITION
         );
 
-        this.initializeNativeAds();
+        // this.initializeNativeAds();
     }
 
     initializeNativeAds() {
@@ -126,11 +160,11 @@ class LogicAds {
     getBannerSizeForDevice(bannerSizes, deviceType) {
         let device;
         if (deviceType === "desktop") {
-            device = this._ads.getBannerSize(bannerSizes.desktopSize);;
+            device = this._ads.getBannerSize(bannerSizes.desktop);
         } else if (deviceType === "tablet") {
-            device = this._ads.getBannerSize(bannerSizes.tabletSize);;
+            device = this._ads.getBannerSize(bannerSizes.tablet);
         } else {
-            device = this._ads.getBannerSize(bannerSizes.mobileSize);
+            device = this._ads.getBannerSize(bannerSizes.mobile);
         }
         return device;
     }

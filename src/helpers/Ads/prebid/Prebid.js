@@ -1,117 +1,112 @@
-import { ConfigAds } from "./ConfigAds";
-
 class Prebid {
-    static loadPrebid({
-        dinamicID = "",
-        adUnit = "",
-        desktop,
-        tablet,
-        mobile,
-    }) {
-        console.log("dinamicID", dinamicID);
-        console.log("adUnit", adUnit);
-        console.log("in prebid!!!!!!", desktop);
-        console.log("tablettablettablet--->", tablet);
-        console.log("mobile-------->", mobile);
-        const {
-            desktopSize,
-            id,
-            mobileSize,
-            tabletSize,
-            position,
-        } = ConfigAds;
-        const TYPE_BANNER = [
-            { desktop: desktopSize },
-            { tablet: tabletSize },
-            { mobile: mobileSize },
+    constructor(adUnit) {
+        this.PREBID_TIMEOUT = 1000;
+        this.FAILSAFE_TIMEOUT = 3000;
+
+        this.adUnit = adUnit;
+    }
+
+    initializePrebid(idGranularidad, sizes) {
+        var adUnits = [
+            {
+                code: 'ad_page_header',
+                mediaTypes: {
+                    banner: {
+                        sizes: sizes
+                    }
+                },
+                bids: [{
+                    bidder: 'appnexus',
+                    params: {
+                        placementId: idGranularidad
+                    }
+                }]
+            }
         ];
-        // const UI_CONFIG = config || {};
-        // const DATA_CONFIG = Object.assign(UI_CONFIG, {});
-        const SIZES_ADS = {
-            desktopSize: desktop,
-            tabletSize: tablet,
-            mobileSize: mobile,
-        };
-        /* const RESULT = new Promise(() => {
-            if (window.pbjs && window.googletag) {
-                this.createAdSlot(
-                    id,
-                    DATA_CONFIG,
-                    SIZES_ADS.desktopSize,
-                    SIZES_ADS.tabletSize,
-                    SIZES_ADS.mobileSize,
-                    position,
-                    adUnit,
-                    Utils.isMobile,
-                    tags,
-                    native,
-                    typeOfBanner,
-                );
+
+        var pbjs = window.pbjs || {};
+        pbjs.que = pbjs.que || [];
+
+        pbjs.que.push(() => {
+            console.log('aqui', adUnits)
+            pbjs.addAdUnits(adUnits);
+            try{
+                pbjs.requestBids({
+                    adUnits: [adUnits],
+                    timeout: this.PREBID_TIMEOUT,
+                    bidsBackHandler: () => {
+                        console.log('dentro')
+                        this.initAdserver(sizes)
+                    },
+                });
+            } catch (e) {
+                console.log('eeeeee', e)
             }
         });
-        return RESULT; */
+
+        // static sendDataPrebid(id, sizes, prebid) {
+        //     console.log('sendDataPrebid', id, sizes, prebid)
+        //     const PB_JS = window.pbjs || {};
+        //     PB_JS.que = PB_JS.que || [];
+
+        //     PB_JS.que.push(() => {
+        //         PB_JS.addAdUnits(prebid);
+        //         PB_JS.requestBids({
+        //             adUnits: [prebid],
+        //             timeout: PREBID_TIMEOUT,
+        //             bidsBackHandler: () => {
+        //                 this.sendAdserverRequest(id, sizes);
+        //             },
+        //         });
+        //     });
+        //     setTimeout(() => {
+        //         this.sendAdserverRequest(id, sizes);
+        //     }, FAILSAFE_TIMEOUT);
+        // }
+
+
+        // in case PBJS doesn't load
+        setTimeout(() => {
+           // this.initAdserver(sizes);
+        }, this.FAILSAFE_TIMEOUT);
     }
 
-    static createAdSlot(
-        containerId,
-        uiConfig,
-        desktopSize,
-        tabletSize,
-        mobileSize,
-        position,
-        adUnit,
-        device,
-        tags,
-        native,
-        typeOfAds,
-    ) {
-        let sizeLoad = "";
-        if (device === "desktop") {
-            sizeLoad = desktopSize;
-        } else if (device === "tablet") {
-            sizeLoad = tabletSize;
-        } else {
-            sizeLoad = mobileSize;
-        }
-        let slotTelevisa = {};
+    initAdserver(sizes) {
+        console.log('recived', sizes)
+        const SLOTS = window.googletag.pubads().getSlots();
+        const DISPLAY_AD_SLOT = SLOTS.find(slot => slot.getSlotElementId() === 'ad_page_header');
+
         window.googletag.cmd.push(() => {
-            if (native) {
-                slotTelevisa = this.pushNativeAd(adUnit, containerId, native);
-            } else {
-                const SIZES_ADS = {
-                    desktopSize,
-                    tabletSize,
-                    mobileSize,
-                };
-                const MAPPING = window.googletag.sizeMapping()
-                    .addSize([980, 140], desktopSize)
-                    .addSize([740, 140], tabletSize)
-                    .addSize([320, 140], mobileSize)
-                    .build();
-                this.requestHeaderBidding(
-                    containerId,
-                    sizeLoad,
-                    position,
-                    uiConfig,
-                    typeOfAds,
-                    device,
-                    SIZES_ADS,
-                );
-                slotTelevisa = this.configureAdSlot(
-                    adUnit,
-                    sizeLoad,
-                    containerId,
-                    MAPPING,
-                    position,
-                    tags,
-                );
-            }
+            window.pbjs.que.push(() => {
+                window.pbjs.setConfig({
+                    priceGranularity: "dense",
+                    enableSendAllBids: true,
+                    sizeConfig: sizes,
+                });
+                window.pbjs.setTargetingForGPTAsync();
+                window.googletag.pubads().refresh([DISPLAY_AD_SLOT]);
+            });
         });
-
-        if (slotTelevisa === null) {
-            console.log("[Error DFP]");
-        }
     }
+
+    // static sendAdserverRequest(slotId, sizes) {
+    //     console.log('sendAdserverRequest', slotId, sizes)
+    //     if (BID_REQUESTS.find(id => id === slotId)) return;
+    //     const SLOTS = window.googletag.pubads().getSlots();
+    //     const DISPLAY_AD_SLOT = SLOTS.find(slot => slot.getSlotElementId() === slotId);
+    //     BID_REQUESTS.push(slotId);
+    //     window.googletag.cmd.push(() => {
+    //         window.pbjs.que.push(() => {
+    //             window.pbjs.setConfig({
+    //                 priceGranularity: "dense",
+    //                 enableSendAllBids: true,
+    //                 sizeConfig: this.sizesConfig(sizes),
+    //             });
+    //             window.pbjs.setTargetingForGPTAsync();
+    //             window.googletag.pubads().refresh([DISPLAY_AD_SLOT]);
+    //         });
+    //     });
+    // }
 }
 
 export default Prebid;

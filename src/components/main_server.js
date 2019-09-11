@@ -29,7 +29,8 @@ class MainServer extends Component {
             contentType: _type,
             adUnitConfig: Config.adUnit,
             configAds: Config.homePage,
-            adLayer: Config.adLayer
+            adLayer: Config.adLayer,
+            bidders: Config.bidders
         }
         let logicAds = new LogicAds(adsConfig);
     }
