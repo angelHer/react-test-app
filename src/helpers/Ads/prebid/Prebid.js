@@ -1,67 +1,92 @@
+import * as R from 'ramda';
+
 class Prebid {
     constructor() {
         this.PREBID_TIMEOUT = 1000;
         this.FAILSAFE_TIMEOUT = 3000;
 
         this._sizes = '';
+        this._idBanner = '';
+        this._bannerSize = '';
     }
 
     get sizes() {
         return this._sizes;
     }
 
+    get idBanner() {
+        return this._idBanner;
+    }
+
+    get bannerSize() {
+        return this._bannerSize;
+    }
+
     set sizes(val) {
         this._sizes = val;
     }
 
-    initializePrebid(idGranularidad, sizes) {
+    set idBanner(val) {
+        this._idBanner = val;
+    }
+
+    set bannerSize(val) {
+        this._bannerSize = val;
+    }
+
+    initializePrebid(idGranularidad, sizes, idBanner, bannerSize) {
         this.sizes = sizes;
+        this.idBanner = idBanner;
+        this.bannerSize = bannerSize;
+
         let adUnits = this.prepareBidders(idGranularidad)
 
         let pbjs = window.pbjs || {};
         pbjs.que = pbjs.que || [];
 
+        /**
+         * TODO a la propiedad pbjs.addAdUnits(), pasar como parametro un array en lugar de un OBJ
+        */
         pbjs.que.push(() => {
-            pbjs.addAdUnits(adUnits);
+            pbjs.addAdUnits([adUnits]);
             pbjs.requestBids({
                 adUnits: [adUnits],
                 timeout: this.PREBID_TIMEOUT,
                 bidsBackHandler: () => {
-                    this.initAdserver([728, 90])
+                    this.initAdserver()
                 },
             });
         });
 
         // in case PBJS doesn't load
         setTimeout(() => {
-        //    this.initAdserver(sizes);
+            // this.initAdserver();
         }, this.FAILSAFE_TIMEOUT);
     }
 
-    initAdserver(sizes) {
-        console.log('recived', sizes)
+    initAdserver() {
         const SLOTS = window.googletag.pubads().getSlots();
-        const DISPLAY_AD_SLOT = SLOTS.find(slot => slot.getSlotElementId() === 'ad_page_header');
+        let adSlot = R.filter(slot => slot.getSlotElementId() === this.idBanner, SLOTS)
 
         window.googletag.cmd.push(() => {
             window.pbjs.que.push(() => {
                 window.pbjs.setConfig({
                     priceGranularity: "dense",
                     enableSendAllBids: true,
-                    sizeConfig: sizes,
+                    sizeConfig: this.sizesConfig(),
                 });
                 window.pbjs.setTargetingForGPTAsync();
-                window.googletag.pubads().refresh([DISPLAY_AD_SLOT]);
+                window.googletag.pubads().refresh(adSlot);
             });
         });
     }
 
     prepareBidders(idGranularidad) {
         return {
-            code: 'ad_page_header',
+            code: this.idBanner,
             mediaTypes: {
                 banner: {
-                    sizes: [728, 90]
+                    sizes: this.bannerSize
                 }
             },
             bids: [
@@ -86,27 +111,22 @@ class Prebid {
         };
     }
 
-    sizesConfig(sizes) {
-        const DESKTOP = (Array.isArray(sizes.desktopSize[0])) ? sizes.desktopSize : [sizes.desktopSize];
-        const TABLET = (Array.isArray(sizes.tabletSize[0])) ? sizes.tabletSize : [sizes.tabletSize];
-        const MOBILE = (Array.isArray(sizes.mobileSize[0])) ? sizes.mobileSize : [sizes.mobileSize];
-
-        const SIZE_CONFIG = [{
-            mediaQuery: "(min-width: 1024px)",
-            sizesSupported: DESKTOP,
-            labels: ["desktop"],
-        }, {
-            mediaQuery: "(min-width: 768px) and (max-width: 1023px)",
-            sizesSupported: TABLET,
-            labels: ["tablet"],
-        }, {
-            mediaQuery: "(min-width: 0px)",
-            sizesSupported: MOBILE,
-            labels: ["phone"],
-        }];
-
-        console.log('return sizesConfig', SIZE_CONFIG);
-        return SIZE_CONFIG;
+    sizesConfig() {
+        return [
+            {
+                mediaQuery: "(min-width: 1024px)",
+                sizesSupported: this.sizes.desktopSize,
+                labels: ["desktop"],
+            },{
+                mediaQuery: "(min-width: 768px) and (max-width: 1023px)",
+                sizesSupported: this.sizes.tabletSize,
+                labels: ["tablet"],
+            }, {
+                mediaQuery: "(min-width: 0px)",
+                sizesSupported: this.sizes.mobileSize,
+                labels: ["phone"],
+            }
+        ];
     }
 }
 

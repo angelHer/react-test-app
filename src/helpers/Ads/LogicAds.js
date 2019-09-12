@@ -96,6 +96,7 @@ class LogicAds {
             mobileSize
         }
 
+        let mainSize = this._ads.getBannerSize(tranformedSizes[this.deviceType]);
         /**
          * Se inicializan los servicios de prebid
          */
@@ -103,7 +104,12 @@ class LogicAds {
             R.prop(this.deviceType, tranformedSizes),
             this.bidders.appNexus
         );
-        this._prebid.initializePrebid(idGranularidad, sizesPrebid);
+        this._prebid.initializePrebid(
+            idGranularidad,
+            sizesPrebid,
+            this._adsProps.configAds.adHeader.id,
+            mainSize
+        );
         /**
          * Termina configuracion de prebid
          */
