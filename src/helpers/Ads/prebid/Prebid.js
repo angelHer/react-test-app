@@ -1,13 +1,17 @@
 import * as R from 'ramda';
 
 class Prebid {
-    constructor() {
+    constructor(_bidders, deviceType) {
         this.PREBID_TIMEOUT = 1000;
         this.FAILSAFE_TIMEOUT = 3000;
 
         this._sizes = '';
         this._idBanner = '';
         this._bannerSize = '';
+        this._bidders = _bidders;
+        this._deviceType = deviceType;
+        this._sizesByDevice = ''
+        this._position = '';
     }
 
     get sizes() {
@@ -22,6 +26,22 @@ class Prebid {
         return this._bannerSize;
     }
 
+    get bidders() {
+        return this._bidders;
+    }
+
+    get deviceType() {
+        return this._deviceType;
+    }
+
+    get sizesByDevice() {
+        return this._sizesByDevice;
+    }
+
+    get position() {
+        return this._position;
+    }
+
     set sizes(val) {
         this._sizes = val;
     }
@@ -34,12 +54,22 @@ class Prebid {
         this._bannerSize = val;
     }
 
-    initializePrebid(idGranularidad, sizes, idBanner, bannerSize) {
+    set sizesByDevice(val) {
+        this._sizesByDevice = val;
+    }
+
+    set position(val) {
+        this._position = val;
+    }
+
+    async initializePrebid(sizes, idBanner, bannerSize, sizesByDevice, position) {
         this.sizes = sizes;
         this.idBanner = idBanner;
         this.bannerSize = bannerSize;
+        this.sizesByDevice = sizesByDevice;
+        this.position = position;
 
-        let adUnits = this.prepareBidders(idGranularidad)
+        let adUnits = await this.prepareBidders()
 
         let pbjs = window.pbjs || {};
         pbjs.que = pbjs.que || [];
@@ -81,7 +111,9 @@ class Prebid {
         });
     }
 
-    prepareBidders(idGranularidad) {
+    prepareBidders() {
+        let bidders = R.values(this.getBidders());
+
         return {
             code: this.idBanner,
             mediaTypes: {
@@ -89,26 +121,51 @@ class Prebid {
                     sizes: this.bannerSize
                 }
             },
-            bids: [
-                {
-                    bidder: 'appnexus',
-                    params: {
-                        placementId: idGranularidad
-                    }
-                },
-                {
-                    bidder: 'rubicon',
-                    params: {
-                        accountId: "16302",
-                        inventory: {
-                            position: "atf"
-                        },
-                        siteId: "119754",
-                        zoneId: "566568"
-                    }
-                }
-            ]
+            bids: bidders
         };
+    }
+
+    getBidders() {
+        let availableBidders = R.filter(bid => bid.visible, this.bidders);
+
+        return R.mapObjIndexed((val, key, obj) => {
+            switch(key) {
+                case 'appnexus':
+                    return this.getAppNexus()
+                case 'rubicon':
+                    return this.getRubIcon(val)
+                default:
+                    break;
+            }
+        }, availableBidders);
+    }
+
+    getRubIcon(data) {
+        return {
+            bidder: 'rubicon',
+            params: {
+                accountId: data.account,
+                siteId: data.site,
+                zoneId: data.zone,
+                inventory: {
+                    position: this.position
+                }
+            }
+        }
+    }
+
+    getAppNexus() {
+        let idGranularidad = R.prop(
+            R.prop(this.deviceType, this.sizesByDevice),
+            this.bidders.appnexus
+        );
+
+        return {
+            bidder: 'appnexus',
+            params: {
+                placementId: idGranularidad
+            }
+        }
     }
 
     sizesConfig() {

@@ -41,7 +41,7 @@ export default {
     },
 
     bidders: {
-        appNexus: {
+        appnexus: {
             visible: true,
             superBanner: "14862539",
             boxBanner: "14862542",
@@ -52,6 +52,13 @@ export default {
             comboPortrait: "15408564",
             comboMaster: "14862543",
             boton: "15408567",
+        },
+        rubicon: {
+            visible: true,
+            placement: "11834950",
+            account: "16302",
+            site: "119754",
+            zone: "566568",
         }
     },
 

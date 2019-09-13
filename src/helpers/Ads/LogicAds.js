@@ -37,14 +37,14 @@ class LogicAds {
         });
         this._googleTag = new GPT(this._adUnit);
 
-        // prebid
-        this._prebid = new Prebid();
-
         /**
          * TODO cambiar propiedad por Utils.isMobile
          */
         // this.this._deviceType = Utils.isMobile;
         this._deviceType = 'desktop';
+
+        // prebid
+        this._prebid = new Prebid(this._bidders, this._deviceType);
 
         this.initializeAds()
     }
@@ -70,17 +70,16 @@ class LogicAds {
         let PREPARED_SIZES = DATA_AD_HEADER.sizes;
         const POSITION = DATA_AD_HEADER.position;
         const ID = DATA_AD_HEADER.id;
-        let tranformedSizes = R.map(size => stringToCamel(size), PREPARED_SIZES);
+        let sizesByDevice = R.map(size => stringToCamel(size), PREPARED_SIZES);
 
         const HEADER_CONTAINER = document.getElementById("adHeader");
         HEADER_CONTAINER.innerHTML = this._container.displayContainer;
 
-        const bannerSize = this.getBannerSizeForDevice(tranformedSizes, this.deviceType);
-        console.log(this.deviceType, tranformedSizes)
+        const bannerSize = this.getBannerSizeForDevice(sizesByDevice, this.deviceType);
 
-        let desktopSize = this._ads.getBannerSize(tranformedSizes.desktop)
-        let tabletSize = this._ads.getBannerSize(tranformedSizes.tablet)
-        let mobileSize = this._ads.getBannerSize(tranformedSizes.mobile)
+        let desktopSize = this._ads.getBannerSize(sizesByDevice.desktop)
+        let tabletSize = this._ads.getBannerSize(sizesByDevice.tablet)
+        let mobileSize = this._ads.getBannerSize(sizesByDevice.mobile)
 
         let sizeMapping = await this._googleTag.createSizeMApping(
             desktopSize,
@@ -88,27 +87,24 @@ class LogicAds {
             mobileSize
         );
 
-        console.log('before', desktopSize)
-
         let sizesPrebid = {
             desktopSize,
             tabletSize,
             mobileSize
         }
 
-        let mainSize = this._ads.getBannerSize(tranformedSizes[this.deviceType]);
+        let mainSize = this._ads.getBannerSize(sizesByDevice[this.deviceType]);
         /**
          * Se inicializan los servicios de prebid
+         * TODO revibir position desde prop
          */
-        let idGranularidad = R.prop(
-            R.prop(this.deviceType, tranformedSizes),
-            this.bidders.appNexus
-        );
+        let position = 'atf';
         this._prebid.initializePrebid(
-            idGranularidad,
             sizesPrebid,
             this._adsProps.configAds.adHeader.id,
-            mainSize
+            mainSize,
+            sizesByDevice,
+            position
         );
         /**
          * Termina configuracion de prebid
