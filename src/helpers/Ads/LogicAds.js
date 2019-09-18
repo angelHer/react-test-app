@@ -132,15 +132,15 @@ class LogicAds {
          * TODO refactorizae prebid, debe recibir lista de ids
          */
 
-        R.map(id => {
-            this._prebid.initializePrebid(
-                sizesPrebid,
-                id,
-                mainSize,
-                sizesByDevice,
-                position
-            );
+        this._prebid.initializePrebid(
+            sizesPrebid,
+            this.idsList,
+            mainSize,
+            sizesByDevice,
+            position
+        );
 
+        R.map(id => {
             this.initializeDisplayAds(
                 bannerSize,
                 id,

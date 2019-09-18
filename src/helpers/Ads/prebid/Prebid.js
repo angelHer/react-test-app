@@ -6,7 +6,7 @@ class Prebid {
         this.FAILSAFE_TIMEOUT = 3000;
 
         this._sizes = '';
-        this._idBanner = '';
+        this._idBanners = [];
         this._bannerSize = '';
         this._bidders = _bidders;
         this._deviceType = deviceType;
@@ -18,8 +18,8 @@ class Prebid {
         return this._sizes;
     }
 
-    get idBanner() {
-        return this._idBanner;
+    get idBanners() {
+        return this._idBanners;
     }
 
     get bannerSize() {
@@ -46,8 +46,8 @@ class Prebid {
         this._sizes = val;
     }
 
-    set idBanner(val) {
-        this._idBanner = val;
+    set idBanners(val) {
+        this._idBanners = val;
     }
 
     set bannerSize(val) {
@@ -62,9 +62,9 @@ class Prebid {
         this._position = val;
     }
 
-    async initializePrebid(sizes, idBanner, bannerSize, sizesByDevice, position) {
+    async initializePrebid(sizes, idBanners, bannerSize, sizesByDevice, position) {
         this.sizes = sizes;
-        this.idBanner = idBanner;
+        this.idBanners = idBanners;
         this.bannerSize = bannerSize;
         this.sizesByDevice = sizesByDevice;
         this.position = position;
@@ -74,13 +74,9 @@ class Prebid {
         let pbjs = window.pbjs || {};
         pbjs.que = pbjs.que || [];
 
-        /**
-         * TODO a la propiedad pbjs.addAdUnits(), pasar como parametro un array en lugar de un OBJ
-        */
         pbjs.que.push(() => {
-            pbjs.addAdUnits([adUnits]);
+            pbjs.addAdUnits(adUnits);
             pbjs.requestBids({
-                adUnits: [adUnits],
                 timeout: this.PREBID_TIMEOUT,
                 bidsBackHandler: () => {
                     this.initAdserver()
@@ -95,9 +91,6 @@ class Prebid {
     }
 
     initAdserver() {
-        const SLOTS = window.googletag.pubads().getSlots();
-        let adSlot = R.filter(slot => slot.getSlotElementId() === this.idBanner, SLOTS)
-
         window.googletag.cmd.push(() => {
             window.pbjs.que.push(() => {
                 window.pbjs.setConfig({
@@ -106,7 +99,7 @@ class Prebid {
                     sizeConfig: this.sizesConfig(),
                 });
                 window.pbjs.setTargetingForGPTAsync();
-                window.googletag.pubads().refresh(adSlot);
+                window.googletag.pubads().refresh();
             });
         });
     }
@@ -114,15 +107,19 @@ class Prebid {
     prepareBidders() {
         let bidders = R.values(this.getBidders());
 
-        return {
-            code: this.idBanner,
-            mediaTypes: {
-                banner: {
-                    sizes: this.bannerSize
-                }
-            },
-            bids: bidders
-        };
+        return R.map(idBanner => {
+            let preparedSlot = {
+                code: idBanner,
+                mediaTypes: {
+                    banner: {
+                        sizes: this.bannerSize
+                    }
+                },
+                bids: bidders
+            }
+
+            return preparedSlot
+        }, this.idBanners);
     }
 
     getBidders() {
