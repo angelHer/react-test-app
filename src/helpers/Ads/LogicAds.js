@@ -17,13 +17,18 @@ class LogicAds {
             contentType,
             adUnitConfig,
             adLayer,
-            bidders
+            bidders,
+            adsContainers
         } = _configAds;
+
+        this._adsContainers = adsContainers;
 
         // 1.- instanciar ads y obtenet adUnit
         this._bidders = bidders;
         this.adLayer = adLayer;
-        this.contentType = contentType
+        this.contentType = contentType;
+
+        this.idsList = [];
 
         this._slotNumbers = new SlotNumbers();
 
@@ -46,6 +51,7 @@ class LogicAds {
         // prebid
         this._prebid = new Prebid(this._bidders, this._deviceType);
 
+        this.prepareContainers()
         this.initializeAds()
     }
 
@@ -65,15 +71,36 @@ class LogicAds {
         return this._bidders;
     }
 
+    get adsContainers() {
+        return this._adsContainers;
+    }
+
+    prepareContainers() {
+        let grpupedContainers = R.groupBy(container =>
+            container.attributes.type.value,
+            this.adsContainers
+        );
+
+        // preparar contenedores tipo display
+        let displayAds = grpupedContainers.display
+        R.map(container => {
+            this._slotNumbers.counter++;
+            let newId = `ad_page_${this._slotNumbers.counter}`
+            this._container.id = newId
+            let containerHtml = this._container.displayContainer
+            container.innerHTML = containerHtml
+
+            this.idsList.push(newId)
+
+            return container
+        }, displayAds);
+    }
+
     async initializeAds() {
         const DATA_AD_HEADER = this.adsProps.configAds.adHeader;
         let PREPARED_SIZES = DATA_AD_HEADER.sizes;
         const POSITION = DATA_AD_HEADER.position;
-        const ID = DATA_AD_HEADER.id;
         let sizesByDevice = R.map(size => stringToCamel(size), PREPARED_SIZES);
-
-        const HEADER_CONTAINER = document.getElementById("adHeader");
-        HEADER_CONTAINER.innerHTML = this._container.displayContainer;
 
         const bannerSize = this.getBannerSizeForDevice(sizesByDevice, this.deviceType);
 
@@ -99,25 +126,32 @@ class LogicAds {
          * TODO revibir position desde prop
          */
         let position = 'atf';
-        this._prebid.initializePrebid(
-            sizesPrebid,
-            this._adsProps.configAds.adHeader.id,
-            mainSize,
-            sizesByDevice,
-            position
-        );
+
+
         /**
-         * Termina configuracion de prebid
+         * TODO refactorizae prebid, debe recibir lista de ids
          */
 
-        this.initializeLayerAds();
+        R.map(id => {
+            this._prebid.initializePrebid(
+                sizesPrebid,
+                id,
+                mainSize,
+                sizesByDevice,
+                position
+            );
 
-        this.initializeDisplayAds(
-            bannerSize,
-            ID,
-            sizeMapping,
-            POSITION
-        );
+            this.initializeDisplayAds(
+                bannerSize,
+                id,
+                sizeMapping,
+                POSITION
+            );
+
+            return id;
+        }, this.idsList);
+
+        this.initializeLayerAds();
         // this.initializeNativeAds();
     }
 

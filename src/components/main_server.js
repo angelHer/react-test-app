@@ -24,13 +24,15 @@ class MainServer extends Component {
             uri
         } = Config.mockup;
 
+        let domIds = document.querySelectorAll('div.ads-container')
         const adsConfig = {
             uri,
             contentType: _type,
             adUnitConfig: Config.adUnit,
             configAds: Config.homePage,
             adLayer: Config.adLayer,
-            bidders: Config.bidders
+            bidders: Config.bidders,
+            adsContainers: domIds
         }
         let logicAds = new LogicAds(adsConfig);
     }
@@ -43,6 +45,11 @@ class MainServer extends Component {
 
                 <div>Ads tipo native</div>
                 <div id="fiveitems_native"></div>
+
+                <div className="ads-container" type="native"></div>
+                <div className="ads-container" type="display"></div>
+                <div className="ads-container" type="display"></div>
+                <div className="ads-container" type="display"></div>
             </div>
         )
     }
